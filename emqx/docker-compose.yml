@@ -8,3 +8,7 @@ services:
     ports:
       - 2883:1883
       - 28083:18083
+    volumes:
+      - ./data:/opt/emqx/data
+      - ./config:/opt/emqx/etc
+      - ./log:/opt/emqx/log
