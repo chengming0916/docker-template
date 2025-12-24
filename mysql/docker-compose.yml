@@ -1,0 +1,17 @@
+networks:
+  mysql_network:
+
+services:
+  mysql:
+    image: 8.0.39
+    restart: always
+    environment:
+      - TZ=Asia/Shanghai
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - ./data:/var/lib/mysql
+      - ./config:/etc/mysql/conf.d
+    ports:
+      - ${MYSQL_PORT}:3306
+    networks:
+      - mysql_network
