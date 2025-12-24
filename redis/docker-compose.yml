@@ -1,0 +1,16 @@
+services:
+  redis:
+    image: redis:7.0.11
+    restart: always
+    container_name: dat-redis
+    volumes:
+      - ./data:/data
+      - ./config:/etc/redis
+    command:
+      - redis-server
+      - "/etc/redis/redis.conf"
+      - --requirepass ${REDIS_PASSWD}
+    ports:
+      - ${REDIS_PORT}:6379
+    networks:
+      - bridge_anbot
