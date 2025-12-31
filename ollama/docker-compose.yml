@@ -1,0 +1,25 @@
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    restart: always
+    command: |-
+      sh -c "ollama serve & 
+            sleep 5 &&
+            ollama pull $OLLAMA_MODEL &&
+            wait"
+    volumes:
+      - ./models:/root/.ollama
+    environment:
+      - TZ=Asia/Shanghai
+      - OLLAMA_MODEL=<MODEL>           # 根据需要的模型修改
+    ports:
+      - "11434:11434"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities:
+                - gpu
