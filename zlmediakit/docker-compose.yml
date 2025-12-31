@@ -1,0 +1,22 @@
+services:
+  zlmediakit:
+    image: zlmediakit/zlmediakit:master
+    container_name: zlmediakit
+    restart: always
+    ports:
+      - 1935:1935   # RTMP协议端口
+      - 80:80       # HTTP/HTTP-TS/Websocket端口
+      - 443:443     # HTTPS/HTTPS-TS-SSL端口
+      - 554:554     # RTSP协议端口
+      - 8000:8000   # Websocket端口
+      - 10000:10000 # RTP over TCP端口
+    volumes:
+      - ./config:/opt/media/conf #　配置
+      - ./log:/opt/media/bin/log #　日志
+    environment:
+      TZ: Asia/Shanghai    # 时区
+    deploy:
+      resources:
+        limits:
+          memory: 4G       # 内存最小需求
+      
