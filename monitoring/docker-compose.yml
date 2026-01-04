@@ -1,5 +1,5 @@
 networks:
-  monitoring_net:
+  monitor-net:
     driver: bridge
 
 services:
@@ -15,7 +15,7 @@ services:
     ports:
       - "3000:3000"
     networks:
-      - monitoring_net
+      - monitor-net
 
   prometheus:
     image: prom/prometheus:latest
@@ -26,10 +26,10 @@ services:
       - "9090:9090"
     volumes:
       - ./prometheus/config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - ./prometheus/data:/prometheus/data
+      - ./prometheus/data:/prometheus
     restart: always
     networks:
-      - monitoring_net
+      - monitor-net
 
   loki:
     image: grafana/loki:latest
@@ -44,7 +44,7 @@ services:
       - "3100:3100"
     restart: always
     networks:
-      - monitoring_net
+      - monitor-net
 
   promtail:
     image: grafana/promtail:latest
@@ -56,4 +56,24 @@ services:
       # - /var/log:/var/log
       - ./promtail/config/config.yml:/etc/promtail/config.yml
     networks:
-      - monitoring_net
+      - monitor-net
+
+  mysql-exporter:
+    image: prom/mysqld-exporter:latest
+    container_name: mysql-exporter
+    ports:
+      - 9104:9104
+    volumes:
+      - ./config.my-cnf:/.my.cnf
+    environment:
+      DATA_SOURCE_NAME: "root:root@(192.168.50.201:3306)"
+    networks:
+      - monitor-net
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    ports:
+      - 9100:9100
+    networks:
+      - monitor-net
