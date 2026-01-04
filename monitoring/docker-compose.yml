@@ -1,0 +1,59 @@
+networks:
+  monitoring_net:
+    driver: bridge
+
+services:
+  grafana:
+    image: grafana/grafana:latest
+    environment:
+      - TZ=Asia/Shanghai
+    container_name: grafana
+    volumes:
+      - ./grafana/config/ds.yaml:/etc/grafana/prom/datasources/ds.yaml:ro
+      - ./grafana/data:/var/lib/grafana
+    restart: always
+    ports:
+      - "3000:3000"
+    networks:
+      - monitoring_net
+
+  prometheus:
+    image: prom/prometheus:latest
+    environment:
+      - TZ=Asia/Shanghai
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/data:/prometheus/data
+    restart: always
+    networks:
+      - monitoring_net
+
+  loki:
+    image: grafana/loki:latest
+    container_name: loki
+    environment:
+      - TZ=Asia/Shanghai
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - ./loki/config/local-config.yaml:/etc/loki/local-config.yaml:ro
+      - ./loki/data:/loki
+    ports:
+      - "3100:3100"
+    restart: always
+    networks:
+      - monitoring_net
+
+  promtail:
+    image: grafana/promtail:latest
+    container_name: promtail
+    environment:
+      - TZ=Asia/Shanghai
+    restart: always
+    volumes:
+      # - /var/log:/var/log
+      - ./promtail/config/config.yml:/etc/promtail/config.yml
+    networks:
+      - monitoring_net
