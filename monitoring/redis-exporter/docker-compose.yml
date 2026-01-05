@@ -1,0 +1,21 @@
+services:
+  redis-exporter:
+    image: oliver006/redis_exporter:latest
+    container_name: redis-exporter
+    restart: always
+    ports:
+      - 9121:9121
+    environment:
+      - TZ=Asia/Shanghai
+    command:
+      - "--redis.addr=redis://host.docker.internal:6379"
+      - "--redis.password=pa123456"
+      # - '--redis.password-file=/redis_passwd.json'
+    networks:
+      - monitor-net
+
+# 配置文件格式
+#{
+#  "redis://127.0.0.1:6379":"passwd",
+#  "redis://127.0.0.1:6379":"passwd1"
+#}
