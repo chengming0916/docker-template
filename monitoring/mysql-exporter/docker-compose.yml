@@ -1,0 +1,13 @@
+services:
+  mysql-exporter:
+    image: prom/mysqld-exporter:latest
+    container_name: mysql-exporter
+    restart: always
+    ports:
+      - 9104:9104
+    volumes:
+      - ./config.cnf:/.my.cnf:ro
+    environment:
+      - TZ=Asia/Shanghai
+    networks:
+      - monitor-net
