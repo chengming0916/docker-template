@@ -15,3 +15,18 @@ services:
       - "/sys:/host/sys:ro"
     networks:
       - monitor-net
+
+# 基础监控（推荐用于生产环境）
+#--collector.disable-defaults
+#--collector.cpu
+#--collector.meminfo  
+#--collector.diskstats
+#--collector.netdev
+#--collector.filesystem
+#--collector.loadavg
+ 
+# 可选的高级监控
+#--collector.netstat
+#--collector.vmstat
+#--collector.interrupts
+#--collector.softnet
