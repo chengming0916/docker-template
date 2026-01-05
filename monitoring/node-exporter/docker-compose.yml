@@ -1,0 +1,17 @@
+services:
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    restart: always
+    command:
+      - "--path.rootfs=/host"
+      - "--path.sysfs=/host/sys"
+      - "--path.procfs=/host/proc"
+    ports:
+      - 9100:9100
+    volumes:
+      - "/:/host:ro,rslave"
+      - "/proc:/host/proc:ro"
+      - "/sys:/host/sys:ro"
+    networks:
+      - monitor-net
