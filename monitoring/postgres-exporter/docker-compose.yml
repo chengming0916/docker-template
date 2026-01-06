@@ -1,0 +1,12 @@
+services:
+  postgres-exporter:
+    image: quay.io/prometheuscommunity/postgres-exporter:latest
+    container_name: postgres-exporter
+    restart: always
+    environment:
+      - TZ=Asia/Shanghai
+      - DATA_SOURCE_URI="localhost:5432/postgres?sslmode=disable"
+      - DATA_SOURCE_USER="postgres"
+      - DATA_SOURCE_PASS="postgres"
+    ports:
+      - 9187:9187
