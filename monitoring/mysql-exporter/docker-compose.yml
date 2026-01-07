@@ -1,5 +1,7 @@
 services:
   mysql-exporter:
+    profiles:
+      - MYSQL_EXPORTER
     image: prom/mysqld-exporter:latest
     container_name: mysql-exporter
     restart: always

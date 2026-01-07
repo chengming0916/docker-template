@@ -2,16 +2,24 @@ networks:
   monitor-net:
     driver: bridge
 
+include:
+  - ./node-exporter/docker-compose.yml
+  - ./redis-exporter/docker-compose.yml
+  - ./mysql-exporter/docker-compose.yml
+  - ./postgres-exporter/docker-compose.yml
+  - ./cadvisor/docker-compose.yml
+
 services:
   grafana:
     image: grafana/grafana:latest
+    container_name: grafana
+    restart: always
     environment:
       - TZ=Asia/Shanghai
-    container_name: grafana
+      - GF_VIEWER_LANGUAGE=zh-Hans # 设置Grafana的语言为简体中文
     volumes:
       - ./grafana/config/ds.yaml:/etc/grafana/prom/datasources/ds.yaml:ro
-      - ./grafana/data:/var/lib/grafana
-    restart: always
+      - ./grafana/data:/var/lib/grafana:rw
     ports:
       - "3000:3000"
     networks:
@@ -19,30 +27,53 @@ services:
 
   prometheus:
     image: prom/prometheus:latest
+    container_name: prometheus
+    restart: always
     environment:
       - TZ=Asia/Shanghai
-    container_name: prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=200h"
+      - "--web.enable-remote-write-receiver"
+      - "--web.enable-lifecycle" # 支持热重载配置
     ports:
       - "9090:9090"
     volumes:
       - ./prometheus/config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - ./prometheus/data:/prometheus
-    restart: always
+      - ./prometheus/data:/prometheus:rw
     networks:
       - monitor-net
 
   loki:
     image: grafana/loki:latest
     container_name: loki
+    restart: always
     environment:
       - TZ=Asia/Shanghai
-    command: -config.file=/etc/loki/local-config.yaml
+    command:
+      - "-config.file=/etc/loki/local-config.yaml"
     volumes:
       - ./loki/config/local-config.yaml:/etc/loki/local-config.yaml:ro
       - ./loki/data:/loki
     ports:
       - "3100:3100"
+    networks:
+      - monitor-net
+
+  alloy:
+    image: grafana/alloy:latest
+    container_name: alloy
     restart: always
+    environment:
+      - TZ=Asia/Shanghai
+    ports:
+      - 12345:12345 # alloy自身指标端口
+      # - 9093:9093 # alert-manager兼容端口
+    command: run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
+    volumes:
+      - ./alloy/config/config.alloy:/etc/alloy/config.alloy:ro
+      - ./alloy/data:/var/lib/alloy
     networks:
       - monitor-net
 
@@ -55,25 +86,5 @@ services:
     volumes:
       # - /var/log:/var/log
       - ./promtail/config/config.yml:/etc/promtail/config.yml
-    networks:
-      - monitor-net
-
-  mysql-exporter:
-    image: prom/mysqld-exporter:latest
-    container_name: mysql-exporter
-    ports:
-      - 9104:9104
-    volumes:
-      - ./config.my-cnf:/.my.cnf
-    environment:
-      DATA_SOURCE_NAME: "root:root@(192.168.50.201:3306)"
-    networks:
-      - monitor-net
-
-  node-exporter:
-    image: prom/node-exporter:latest
-    container_name: node-exporter
-    ports:
-      - 9100:9100
     networks:
       - monitor-net

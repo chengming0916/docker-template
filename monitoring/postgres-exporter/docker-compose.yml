@@ -1,5 +1,7 @@
 services:
   postgres-exporter:
+    profiles:
+      - PG_EXPORTER
     image: quay.io/prometheuscommunity/postgres-exporter:latest
     container_name: postgres-exporter
     restart: always

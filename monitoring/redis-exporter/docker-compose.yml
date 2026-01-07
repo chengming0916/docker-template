@@ -1,5 +1,7 @@
 services:
   redis-exporter:
+    profiles:
+      - REDIS_EXPORTER
     image: oliver006/redis_exporter:latest
     container_name: redis-exporter
     restart: always
@@ -13,7 +15,6 @@ services:
       # - '--redis.password-file=/redis_passwd.json'
     networks:
       - monitor-net
-
 # 配置文件格式
 #{
 #  "redis://127.0.0.1:6379":"passwd",
