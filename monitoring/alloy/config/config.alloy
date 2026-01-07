@@ -1,0 +1,159 @@
+// This config file is designed to send traces and metrics to the docker
+// compose environment from example/docker-compose.
+
+logging {
+	level  = "debug"
+	format = "logfmt"
+}
+
+// tracing {
+// 	// Sample all traces. This value should be lower for production configs!
+// 	sampling_fraction = 1
+//
+// 	write_to = [otelcol.exporter.otlp.tempo.input]
+// }
+
+// otelcol.exporter.otlp "tempo" {
+// 	client {
+// 		endpoint = "localhost:4317"
+// 
+// 		tls {
+// 			insecure = true
+// 		}
+// 	}
+// }
+
+// prometheus.exporter.unix "default" { /* use defaults */ }
+
+
+//prometheus.scrape "default" {
+// 	targets    = prometheus.exporter.unix.default.targets
+// 	forward_to = [prometheus.remote_write.default.receiver]
+// }
+
+// 采集指标转发到Prometheus
+prometheus.remote_write "default" {
+	endpoint {
+		url = "http://192.168.50.251:9090/api/v1/write"
+
+    // basic_auth {
+    //   username = "<USERNAME>"
+    //   password = "<PASSWORD>"
+    // }
+	}
+}
+
+prometheus.scrape "self" {
+  targets = [{
+    // alloy 自身指标端口
+    __address__ = "localhost:12345", 
+  }]
+  forward_to = [prometheus.remote_write.default.receiver]
+}
+
+// prometheus.scrape "docker" {
+//   targets = [{
+//     // 宿主机的Docker Exporter端口
+//     __address__ = "host.docker.internal:2375", 
+//   }]
+//   forward_to = [prometheus.remote_write.default.receiver]
+// }
+
+prometheus.exporter.redis "redis_exporter_example" {
+  redis_addr = "<redis-ip>:6379"
+  redis_password = "<redis-password>"
+}
+
+
+prometheus.scrape "redis_scrape_201" {
+  targets = prometheus.exporter.redis.redis_exporter_example.targets
+  forward_to = [prometheus.relabel.redis_relabel_201.receiver]
+}
+
+prometheus.relabel "redis_relabel_201" {
+  forward_to = [prometheus.remote_write.default.receiver]
+
+  rule {
+    action = "replace"
+    source_label = ["__address__", "instance"]
+    separator = "/"
+    target_label = "host"
+  }
+}
+
+prometheus.exporter.unix "node_exporter_example" { 
+  enable_collectors = ["cpu", "disk", "netstat"]
+}
+
+prometheus.scrape "node_scrape_example" {
+  targets = prometheus.exporter.unix.node_exporter_example.targets
+  forward_to = [prometheus.relabel.node_relabel_example.receiver]
+}
+
+prometheus.relabel "node_relabel_example" {
+  forward_to = [prometheus.remote_write.default.receiver]
+
+  rule {
+    action = "replace"
+    source_labels = ["__address__", "instance"]
+    separator = "/"
+    target_label = "host"
+  }
+
+  rule {
+    target_label = "instance"
+    replacement = "node_example"
+  }
+}
+
+prometheus.exporter.postgres "postgres_exporter_example" {
+  data_source_names = ["postgresql://<user>:<password>@<ip>:5432/postgres?sslmode=disable"]
+  enabled_collectors = [
+      "database",                   
+      "database_wraparound",        
+      "locks",                      
+      "long_running_transactions",  
+      "postmaster",                
+      "process_idle",               
+      "replication",               
+      "replication_slot",           
+      "stat_activity_autovacuum",   
+      "stat_bgwriter",              
+      "stat_database",              
+      "stat_statements",            
+      "stat_user_tables",          
+      "stat_wal_receiver",          
+      "statio_user_indexes",        
+      "statio_user_tables",         
+      "wal",                             
+  ]
+}
+
+prometheus.scrape "postgres_scrape_example" {
+  targets    = prometheus.exporter.postgres.postgres_exporter_example.targets
+  forward_to = [prometheus.remote_write.default.receiver]
+  job_name   = "postgres"
+}
+
+prometheus.exporter.mysql "mysql_exporter_example" {
+  data_source_name = "<user>:<password>@(<ip>:3306)/"
+}
+
+prometheus.scrape "mysql_scrape_example" {
+  targets = prometheus.exporter.mysql.mysql_exporter_example.targets
+  forward_to = [prometheus.relabel.mysql_relabel_example.receiver]
+}
+
+prometheus.relabel "mysql_relabel_example" {
+  forward_to = [prometheus.remote_write.default.receiver]
+
+  rule {
+    target_label = "instance"
+    replacement = "mysql_example"
+  }
+
+  rule {
+    target_label = "job"
+    replacement = "mysql"
+  }
+}

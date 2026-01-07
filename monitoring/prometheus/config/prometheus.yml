@@ -31,46 +31,83 @@ scrape_configs:
         labels:
           app: "prometheus"
 
-  - job_name: "node_exporter"
+  - job_name: "alloy"
     static_configs:
-      - targets: ["host.docker.internal:9100"]
+      - targets: ["alloy:12345"]
         labels:
-          app: "node_exporter"
+          app: alloy
 
-  - job_name: "mysql"
-    static_configs:
-      - targets:
-          - "host.docker.internal:9104"
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: instance
+  # - job_name: "node_exporter"
+  #   static_configs:
+  #     - targets: ["<ip>:9100"]
+  #       labels:
+  #         app: "node_exporter"
 
-  - job_name: "emqx"
-    static_configs:
-      - targets:
-          - "192.168.50.201:18083"
-    metrics_path: "/api/v5/prometheus/stats"
-    scheme: "http"
-    basic_auth:
-      username: "admin"
-      password: "TJpa@123456"
+  # - job_name: "cadvisor"
+  #   static_configs:
+  #     - targets: [<ip>:18080]
+  #       labels:
+  #         app: "cadvisor"
 
-  - job_name: "emqx_auth"
-    static_configs:
-      - targets:
-          - 192.168.50.201:18083
-    metrics_path: "/api/v5/prometheus/auth"
-    scheme: "http"
-    basic_auth:
-      username: "admin"
-      password: "TJpa@123456"
+  # - job_name: "mysql"
+  #   static_configs:
+  #     - targets:
+  #         - "<ip>:9104"
+  #   relabel_configs:
+  #     - source_labels: [__address__]
+  #       target_label: instance
 
-  - job_name: "emqx_data_integration"
-    static_configs:
-      - targets:
-          - "192.168.50.201:18083"
-    metrics_path: "/api/v5/prometheus/data_integration"
-    scheme: "http"
-    basic_auth:
-      username: "admin"
-      password: "TJpa@123456"
+  # - job_name: "postgres"
+  #   static_configs:
+  #     - targets:
+  #         - "<ip>:9187"
+  #   relabel_configs:
+  #     - source_labels: [__address__]
+  #       target_label: __param_target
+  #     - source_labels: [__param_target]
+  #       target_label: instance
+  #     - target_label: __address__
+  #       replacement: <postgres-host>
+
+  # - job_name: "redis"
+  #   static_configs:
+  #     - targets:
+  #         - "<ip>:9121"
+  #   metrics_path: /scrape
+  #   relabel_configs:
+  #     - source_labels: [__address__]
+  #       target_label: __param_target
+  #     - source_labels: [__param_target]
+  #       target_label: instance
+  #     - target_label: __address__
+  #       replacement: <redis-host>
+
+  # - job_name: "emqx"
+  #   static_configs:
+  #     - targets:
+  #         - "<ip>:18083"
+  #   metrics_path: "/api/v5/prometheus/stats"
+  #   scheme: "http"
+  #   basic_auth:
+  #     username: "<user>"
+  #     password: "<password>"
+
+  # - job_name: "emqx_auth"
+  #   static_configs:
+  #     - targets:
+  #         - <ip>:18083
+  #   metrics_path: "/api/v5/prometheus/auth"
+  #   scheme: "http"
+  #   basic_auth:
+  #     username: "<user>"
+  #     password: "<password>"
+
+  # - job_name: "emqx_data_integration"
+  #   static_configs:
+  #     - targets:
+  #         - "<ip>:18083"
+  #   metrics_path: "/api/v5/prometheus/data_integration"
+  #   scheme: "http"
+  #   basic_auth:
+  #     username: "<user>"
+  #     password: "<password>"
