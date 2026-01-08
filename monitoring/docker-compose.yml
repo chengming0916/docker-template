@@ -16,9 +16,12 @@ services:
     restart: always
     environment:
       - TZ=Asia/Shanghai
-      - GF_VIEWER_LANGUAGE=zh-Hans # 设置Grafana的语言为简体中文
+      - GF_VIEWER_LANGUAGE="zh-Hans"       # 设置Grafana的语言为简体中文
+      - GF_AUTH_ANONYMOUS_ENABLED="true"   # 启用匿名访问
+      - GF_AUTH_ANONYMOUS_ORG_ROLE="Admin" # 匿名用户角色设置
+      - GF_SECURITY_ALLOW_EMBEDDING="true" # 允许嵌入 Grafana 面板到其他网页
     volumes:
-      - ./grafana/config/ds.yaml:/etc/grafana/prom/datasources/ds.yaml:ro
+      - ./grafana/config/ds.yaml:/etc/grafana/prom/datasources/ds.yaml:rw
       - ./grafana/data:/var/lib/grafana:rw
     ports:
       - "3000:3000"
@@ -37,8 +40,8 @@ services:
       - "--storage.tsdb.retention.time=200h"
       - "--web.enable-remote-write-receiver"
       - "--web.enable-lifecycle" # 支持热重载配置
-    ports:
-      - "9090:9090"
+    # ports:
+    #   - "9090:9090"
     volumes:
       - ./prometheus/config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - ./prometheus/data:/prometheus:rw
@@ -56,8 +59,8 @@ services:
     volumes:
       - ./loki/config/local-config.yaml:/etc/loki/local-config.yaml:ro
       - ./loki/data:/loki
-    ports:
-      - "3100:3100"
+    # ports:
+    #   - "3100:3100"
     networks:
       - monitor-net
 
@@ -67,9 +70,9 @@ services:
     restart: always
     environment:
       - TZ=Asia/Shanghai
-    ports:
-      - 12345:12345 # alloy自身指标端口
-      # - 9093:9093 # alert-manager兼容端口
+    # ports:
+    #   - 12345:12345 # alloy自身指标端口
+    #   - 9093:9093 # alert-manager兼容端口
     command: run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
     volumes:
       - ./alloy/config/config.alloy:/etc/alloy/config.alloy:ro
